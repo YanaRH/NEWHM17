@@ -126,10 +126,11 @@ class Category:
         return CategoryIterator(self)
 
     def average_price(self):
-        if not self.__products:
-            raise ValueError("Нет продуктов для расчета средней цены.")
-        total_price = sum(product.price for product in self.__products)
-        return total_price / len(self.__products)
+        try:
+            total_price = sum(product.price for product in self.__products)
+            return total_price / len(self.__products)
+        except ZeroDivisionError:
+            return 0
 
 class CategoryIterator:
     def __init__(self, category):

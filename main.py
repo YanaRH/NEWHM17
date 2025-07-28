@@ -42,11 +42,11 @@ class Category:
         Category.product_count += 1
 
     def average_price(self):
-        if not self.products:  # Проверяем, есть ли товары в категории
-            raise NoProductsError("В категории нет товаров.")  # Выбрасываем исключение
-        total_price = sum(product.price for product in self.products)
-        average = total_price / len(self.products)  # Возвращаем среднюю цену
-        return average
+        try:
+            total_price = sum(product.price for product in self.__products)
+            return total_price / len(self.__products)
+        except ZeroDivisionError:
+            return 0
 
     def __str__(self):
         return f"Category: {self.name}, Description: {self.description}"
