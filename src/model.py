@@ -30,8 +30,10 @@ class LoggingMixin:
 
 class Product(LoggingMixin, BaseProduct):
     def __init__(self, name, description, price, quantity):
-        if quantity == 0:
-            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+        if quantity <= 0:
+            raise ValueError("Товар с нулевым или отрицательным количеством не может быть добавлен")
+        if price <= 0:
+            raise ValueError("Цена товара должна быть положительной")
         self.name = name
         self.description = description
         self.__price = price
@@ -46,10 +48,9 @@ class Product(LoggingMixin, BaseProduct):
     @price.setter
     def price(self, new_price):
         """Сеттер для приватного атрибута price с проверкой на положительное значение."""
-        if new_price > 0:
-            self.__price = new_price
-        else:
-            print("Цена не должна быть нулевая или отрицательная")
+        if new_price <= 0:
+            raise ValueError("Цена не должна быть нулевая или отрицательная")
+        self.__price = new_price
 
     def __str__(self):
         """Строковое представление объекта Product."""
@@ -57,9 +58,9 @@ class Product(LoggingMixin, BaseProduct):
 
     def __add__(self, other):
         """Магический метод сложения для объектов Product."""
-        if type(self) == type(other):
-            return self.price * self.quantity + other.price * other.quantity
-        raise TypeError("Операнд справа должен иметь тот же тип")
+        if not isinstance(other, Product):
+            raise TypeError("Операнд справа должен иметь тип Product или его наследников")
+        return self.price * self.quantity + other.price * other.quantity
 
 class Smartphone(Product):
     def __init__(self, name, description, price, quantity, efficiency, model, memory, color):
@@ -94,17 +95,11 @@ class Category:
 
     def add_product(self, product):
         """Добавляет продукт в список и увеличивает счетчик продуктов."""
-        try:
-            if issubclass(type(product), Product):
-                self.__products.append(product)
-                Category.product_count += 1
-                print("Товар добавлен")
-            else:
-                raise TypeError("Можно добавлять только объекты типа Product или его наследников.")
-        except ValueError as e:
-            print(e)
-        finally:
-            print("Обработка добавления товара завершена")
+        if not isinstance(product, Product):
+            raise TypeError("Можно добавлять только объекты типа Product или его наследников.")
+        self.__products.append(product)
+        Category.product_count += 1
+        print("Товар добавлен")
 
     @property
     def products(self):
@@ -132,7 +127,7 @@ class Category:
 
     def average_price(self):
         if not self.__products:
-            return 0
+            raise ValueError("Нет продуктов для расчета средней цены.")
         total_price = sum(product.price for product in self.__products)
         return total_price / len(self.__products)
 
